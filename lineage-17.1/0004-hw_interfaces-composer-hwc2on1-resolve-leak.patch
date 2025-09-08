@@ -1,0 +1,29 @@
+From 290e479d87f24885cb29e0c3414593b4a63f275e Mon Sep 17 00:00:00 2001
+From: arttttt <artem-bambalov@yandex.ru>
+Date: Thu, 5 Dec 2019 22:05:32 +0300
+Subject: [PATCH] composer: hwc2on1: Resolve fence leak
+
+* NVidia's Tegra K1 GL blobs hit this leak, that ultimately
+  results in SystemUI soft-resetting every so often when under
+  any form of stressful loads.
+
+Change-Id: Iab9e5004ed370d5d76d182cb4ba2804ed0065ddc
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/hardware/interfaces/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp b/hardware/interfaces/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp
+index 3d138f7308..834720837c 100644
+--- a/hardware/interfaces/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp
++++ b/hardware/interfaces/graphics/composer/2.1/utils/hwc2on1adapter/HWC2On1Adapter.cpp
+@@ -1294,7 +1294,8 @@ Error HWC2On1Adapter::Display::set(hwc_display_contents_1& hwcContents) {
+     auto& clientTargetLayer = hwcContents.hwLayers[numLayers - 1];
+     if (clientTargetLayer.compositionType == HWC_FRAMEBUFFER_TARGET) {
+         clientTargetLayer.handle = mClientTarget.getBuffer();
+-        clientTargetLayer.acquireFenceFd = mClientTarget.getFence();
++        close(mClientTarget.getFence());
++        clientTargetLayer.acquireFenceFd = -1;
+     } else {
+         ALOGE("[%" PRIu64 "] set: last HWC layer wasn't FRAMEBUFFER_TARGET",
+                 mId);

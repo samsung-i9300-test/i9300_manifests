@@ -1,0 +1,48 @@
+From 84e5dc72572d7f53b396846c21db9d13d40e0be5 Mon Sep 17 00:00:00 2001
+From: Dominggoes Isakh <drjisakh@gmail.com>
+Date: Thu, 1 Dec 2016 23:07:57 +0100
+Subject: [PATCH] ColorFade: fix EGL crash on exynos4 mali blobs
+
+Change-Id: Ic14a3208486cf61a054cb9532d74c5a46d7f784d
+---
+ .../java/com/android/server/display/ColorFade.java     | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/frameworks/base/services/core/java/com/android/server/display/ColorFade.java b/frameworks/base/services/core/java/com/android/server/display/ColorFade.java
+index c46fc20b3cc87..05aae7a30877d 100644
+--- a/frameworks/base/services/core/java/com/android/server/display/ColorFade.java
++++ b/frameworks/base/services/core/java/com/android/server/display/ColorFade.java
+@@ -28,6 +28,7 @@
+ import android.opengl.GLES11Ext;
+ import android.opengl.GLES20;
+ import android.os.IBinder;
++import android.os.SystemProperties;
+ import android.util.Slog;
+ import android.view.Display;
+ import android.view.DisplayInfo;
+@@ -75,6 +76,8 @@ final class ColorFade {
+ 
+     private static final int EGL_GL_COLORSPACE_KHR = 0x309D;
+     private static final int EGL_GL_COLORSPACE_DISPLAY_P3_PASSTHROUGH_EXT = 0x3490;
++    private static final boolean DESTROY_SURFACE_AFTER_DETACH =
++            SystemProperties.getBoolean("ro.egl.destroy_after_detach", false);
+ 
+     private final int mDisplayId;
+ 
+@@ -336,10 +339,15 @@ public void dismissResources() {
+                 destroyScreenshotTexture();
+                 destroyGLShaders();
+                 destroyGLBuffers();
+-                destroyEglSurface();
++                if (!DESTROY_SURFACE_AFTER_DETACH) {
++                    destroyEglSurface();
++                }
+             } finally {
+                 detachEglContext();
+             }
++            if (DESTROY_SURFACE_AFTER_DETACH) {
++                destroyEglSurface();
++            }
+             // This is being called with no active context so shouldn't be
+             // needed but is safer to not change for now.
+             GLES20.glFlush();

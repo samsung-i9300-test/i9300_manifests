@@ -1,0 +1,58 @@
+allow permissive user builds
+
+--- a/system/sepolicy/Android.mk	2025-09-08 20:53:59.244544751 +0800
++++ b/system/sepolicy/Android.mk	2025-09-08 20:55:29.325911034 +0800
+@@ -81,10 +81,10 @@
+ BOARD_SEPOLICY_VERS := $(PLATFORM_SEPOLICY_VERSION)
+ endif
+ 
+-NEVERALLOW_ARG :=
++SELINUX_IGNORE_NEVERALLOWS := true
+ ifeq ($(SELINUX_IGNORE_NEVERALLOWS),true)
+ ifeq ($(TARGET_BUILD_VARIANT),user)
+-$(error SELINUX_IGNORE_NEVERALLOWS := true cannot be used in user builds)
++$(warning SELINUX_IGNORE_NEVERALLOWS := true cannot be used in user builds)
+ endif
+ $(warning Be careful when using the SELINUX_IGNORE_NEVERALLOWS flag. \
+           It does not work in user builds and using it will \
+@@ -983,7 +983,6 @@
+ 		echo "ERROR: permissive domains not allowed in user builds" 1>&2; \
+ 		echo "List of invalid domains:" 1>&2; \
+ 		cat $@.permissivedomains 1>&2; \
+-		exit 1; \
+ 		fi
+ 	$(hide) mv $@.tmp $@
+ 
+@@ -1037,7 +1036,6 @@
+ 		echo "ERROR: permissive domains not allowed in user builds" 1>&2; \
+ 		echo "List of invalid domains:" 1>&2; \
+ 		cat $@.permissivedomains 1>&2; \
+-		exit 1; \
+ 		fi
+ 	$(hide) mv $@.tmp $@
+ 
+ 
+--- a/system/core/init/Android.bp	2025-09-08 20:56:25.712512979 +0800
++++ b/system/core/init/Android.bp	2025-09-08 20:56:40.642407418 +0800
+@@ -27,7 +27,7 @@
+         "-Wno-unused-parameter",
+         "-Werror",
+         "-DALLOW_LOCAL_PROP_OVERRIDE=0",
+-        "-DALLOW_PERMISSIVE_SELINUX=0",
++        "-DALLOW_PERMISSIVE_SELINUX=1",
+         "-DREBOOT_BOOTLOADER_ON_PANIC=0",
+         "-DWORLD_WRITABLE_KMSG=0",
+         "-DDUMP_ON_UMOUNT_FAILURE=0",
+
+--- a/system/core/init/Android.mk	2025-09-08 20:57:45.598947403 +0800
++++ b/system/core/init/Android.mk	2025-09-08 20:58:23.022681893 +0800
+@@ -16,7 +16,7 @@
+ else
+ init_options += \
+     -DALLOW_LOCAL_PROP_OVERRIDE=0 \
+-    -DALLOW_PERMISSIVE_SELINUX=0 \
++    -DALLOW_PERMISSIVE_SELINUX=1 \
+     -DREBOOT_BOOTLOADER_ON_PANIC=0 \
+     -DWORLD_WRITABLE_KMSG=0 \
+     -DDUMP_ON_UMOUNT_FAILURE=0
+

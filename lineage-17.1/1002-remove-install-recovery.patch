@@ -1,0 +1,20 @@
+remove install-recovery.sh
+
+--- a/build/make/tools/releasetools/common.py	2025-09-08 21:00:53.398611938 +0800
++++ b/build/make/tools/releasetools/common.py	2025-09-08 21:01:17.719438480 +0800
+@@ -2375,14 +2375,6 @@
+        'recovery_device': recovery_device,
+        'bonus_args': bonus_args}
+ 
+-  # The install script location moved from /system/etc to /system/bin
+-  # in the L release.
+-  sh_location = "bin/install-recovery.sh"
+-
+-  logger.info("putting script in %s", sh_location)
+-
+-  output_sink(sh_location, sh.encode())
+-
+ 
+ class DynamicPartitionUpdate(object):
+   def __init__(self, src_group=None, tgt_group=None, progress=None,
+

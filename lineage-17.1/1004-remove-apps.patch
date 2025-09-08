@@ -1,0 +1,46 @@
+diff -ruN a/vendor/lineage/config/common.mk b/vendor/lineage/config/common.mk
+--- a/vendor/lineage/config/common.mk	2025-09-08 21:03:17.955579593 +0800
++++ b/vendor/lineage/config/common.mk	2025-09-08 21:05:26.236794653 +0800
+@@ -110,9 +110,7 @@
+ # Lineage packages
+ PRODUCT_PACKAGES += \
+     LineageParts \
+-    LineageSettingsProvider \
+-    LineageSetupWizard \
+-    Updater
++    LineageSettingsProvider
+ 
+ # Themes
+ PRODUCT_PACKAGES += \
+@@ -172,9 +170,10 @@
+     procmem
+ 
+ # Root
++ifneq ($(TARGET_BUILD_VARIANT),user)
+ PRODUCT_PACKAGES += \
+     adb_root
+-ifneq ($(TARGET_BUILD_VARIANT),user)
++
+ ifeq ($(WITH_SU),true)
+ PRODUCT_PACKAGES += \
+     su
+diff -ruN a/vendor/lineage/config/common_mobile.mk b/vendor/lineage/config/common_mobile.mk
+--- a/vendor/lineage/config/common_mobile.mk	2025-09-08 11:57:59.651650345 +0800
++++ b/vendor/lineage/config/common_mobile.mk	2025-09-08 21:06:06.557544251 +0800
+@@ -25,15 +25,9 @@
+     Jelly \
+     LockClock \
+     Profiles \
+-    Seedvault \
+     TrebuchetQuickStep \
+     WeatherProvider
+ 
+-ifneq ($(TARGET_EXCLUDES_AUDIOFX),true)
+-PRODUCT_PACKAGES += \
+-    AudioFX
+-endif
+-
+ # Charger
+ PRODUCT_PACKAGES += \
+     charger_res_images
+

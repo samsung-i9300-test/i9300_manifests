@@ -1,0 +1,12 @@
+--- a/build/soong/cc/config/global.go	2025-09-08 21:08:41.273560559 +0800
++++ b/build/soong/cc/config/global.go	2025-09-08 21:09:12.971355134 +0800
+@@ -42,7 +42,7 @@
+ 		"-fno-exceptions",
+ 		"-Wno-multichar",
+ 
+-		"-O2",
++		"-O3",
+ 		"-g",
+ 
+ 		"-fno-strict-aliasing",
+

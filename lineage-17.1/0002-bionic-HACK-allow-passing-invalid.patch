@@ -1,0 +1,30 @@
+From c0ed61114a6ad542eb308bc1ebd68bbb5bbe8b34 Mon Sep 17 00:00:00 2001
+From: Shilin Victor <chrono.monochrome@gmail.com>
+Date: Mon, 28 Oct 2019 11:31:23 +0300
+Subject: [PATCH] HACK: libc: allow passing invalid pthreads
+
+Change-Id: Iac4684c49e315c0e52caf918ee89fb8d865d5851
+---
+ libc/bionic/pthread_internal.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/bionic/libc/bionic/pthread_internal.cpp b/bionic/libc/bionic/pthread_internal.cpp
+index 6fddefe431..637104f9b7 100644
+--- a/bionic/libc/bionic/pthread_internal.cpp
++++ b/bionic/libc/bionic/pthread_internal.cpp
+@@ -101,6 +101,8 @@ pthread_internal_t* __pthread_internal_find(pthread_t thread_id, const char* cal
+   }
+ 
+   // Historically we'd return null, but
++  (void)caller;
++#if 0
+   if (android_get_application_target_sdk_version() >= __ANDROID_API_O__) {
+     if (thread == nullptr) {
+       // This seems to be a common mistake, and it's relatively harmless because
+@@ -113,5 +115,6 @@ pthread_internal_t* __pthread_internal_find(pthread_t thread_id, const char* cal
+       async_safe_fatal("invalid pthread_t %p passed to %s", thread, caller);
+     }
+   }
++#endif
+   return nullptr;
+ }
