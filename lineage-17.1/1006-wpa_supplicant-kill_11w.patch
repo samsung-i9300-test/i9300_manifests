@@ -1,0 +1,210 @@
+kill 80211w on UL
+the broadcom driver here has the same issues that is known by many
+where it flags for 11W / MFP capability but it really isnt capable
+which causes issues when connecting to WPA3/2 mixed AP's (WPA3-transition mode) or even PSK/SHA256 w/ optional MFP APs
+
+so for this we just force kill 11W capability on supplicant and supplicant hidl
+which forces it to connect as PSK 00-0f-ac-2
+
+diff -ruN a/external/wpa_supplicant_8/hostapd/src/ap/Makefile b/external/wpa_supplicant_8/hostapd/src/ap/Makefile
+--- a/external/wpa_supplicant_8/hostapd/src/ap/Makefile	2026-03-01 15:59:45.233705291 +0800
++++ b/external/wpa_supplicant_8/hostapd/src/ap/Makefile	2026-03-01 15:49:56.789911437 +0800
+@@ -15,7 +15,6 @@
+ CFLAGS += -DCONFIG_INTERWORKING
+ CFLAGS += -DCONFIG_IEEE80211R
+ CFLAGS += -DCONFIG_IEEE80211R_AP
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_WPS
+ CFLAGS += -DCONFIG_PROXYARP
+ CFLAGS += -DCONFIG_IPV6
+diff -ruN a/external/wpa_supplicant_8/hostapd/src/common/Makefile b/external/wpa_supplicant_8/hostapd/src/common/Makefile
+--- a/external/wpa_supplicant_8/hostapd/src/common/Makefile	2026-03-01 15:59:45.238705273 +0800
++++ b/external/wpa_supplicant_8/hostapd/src/common/Makefile	2026-03-01 15:50:11.197855247 +0800
+@@ -9,7 +9,6 @@
+ include ../lib.rules
+ 
+ CFLAGS += -DCONFIG_IEEE80211R
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_HS20
+ CFLAGS += -DCONFIG_SAE
+ CFLAGS += -DCONFIG_SUITE
+diff -ruN a/external/wpa_supplicant_8/hostapd/src/rsn_supp/Makefile b/external/wpa_supplicant_8/hostapd/src/rsn_supp/Makefile
+--- a/external/wpa_supplicant_8/hostapd/src/rsn_supp/Makefile	2026-03-01 15:59:45.258705200 +0800
++++ b/external/wpa_supplicant_8/hostapd/src/rsn_supp/Makefile	2026-03-01 15:50:25.990797709 +0800
+@@ -8,7 +8,6 @@
+ 
+ include ../lib.rules
+ 
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_IEEE80211R
+ CFLAGS += -DCONFIG_TDLS
+ CFLAGS += -DCONFIG_WNM
+diff -ruN a/external/wpa_supplicant_8/src/ap/Makefile b/external/wpa_supplicant_8/src/ap/Makefile
+--- a/external/wpa_supplicant_8/src/ap/Makefile	2026-03-01 15:59:45.233705291 +0800
++++ b/external/wpa_supplicant_8/src/ap/Makefile	2026-03-01 15:49:56.789911437 +0800
+@@ -15,7 +15,6 @@
+ CFLAGS += -DCONFIG_INTERWORKING
+ CFLAGS += -DCONFIG_IEEE80211R
+ CFLAGS += -DCONFIG_IEEE80211R_AP
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_WPS
+ CFLAGS += -DCONFIG_PROXYARP
+ CFLAGS += -DCONFIG_IPV6
+diff -ruN a/external/wpa_supplicant_8/src/common/Makefile b/external/wpa_supplicant_8/src/common/Makefile
+--- a/external/wpa_supplicant_8/src/common/Makefile	2026-03-01 15:59:45.238705273 +0800
++++ b/external/wpa_supplicant_8/src/common/Makefile	2026-03-01 15:50:11.197855247 +0800
+@@ -9,7 +9,6 @@
+ include ../lib.rules
+ 
+ CFLAGS += -DCONFIG_IEEE80211R
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_HS20
+ CFLAGS += -DCONFIG_SAE
+ CFLAGS += -DCONFIG_SUITE
+diff -ruN a/external/wpa_supplicant_8/src/rsn_supp/Makefile b/external/wpa_supplicant_8/src/rsn_supp/Makefile
+--- a/external/wpa_supplicant_8/src/rsn_supp/Makefile	2026-03-01 15:59:45.258705200 +0800
++++ b/external/wpa_supplicant_8/src/rsn_supp/Makefile	2026-03-01 15:50:25.990797709 +0800
+@@ -8,7 +8,6 @@
+ 
+ include ../lib.rules
+ 
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_IEEE80211R
+ CFLAGS += -DCONFIG_TDLS
+ CFLAGS += -DCONFIG_WNM
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/android.config b/external/wpa_supplicant_8/wpa_supplicant/android.config
+--- a/external/wpa_supplicant_8/wpa_supplicant/android.config	2026-03-01 15:59:45.266705171 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/android.config	2026-03-01 15:48:48.192181126 +0800
+@@ -272,7 +272,7 @@
+ 
+ # IEEE 802.11w (management frame protection), also known as PMF
+ # Driver support is also needed for IEEE 802.11w.
+-CONFIG_IEEE80211W=y
++# CONFIG_IEEE80211W=y
+ 
+ # Support Operating Channel Validation
+ #CONFIG_OCV=y
+@@ -543,7 +543,7 @@
+ CONFIG_DPP=y
+ 
+ # WPA3-Personal (SAE)
+-CONFIG_SAE=y
++# CONFIG_SAE=y
+ 
+ # WPA3-Enterprise (SuiteB-192)
+ CONFIG_SUITEB=y
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/Android.mk b/external/wpa_supplicant_8/wpa_supplicant/Android.mk
+--- a/external/wpa_supplicant_8/wpa_supplicant/Android.mk	2026-03-01 15:59:45.265705174 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/Android.mk	2026-03-01 15:50:41.374738045 +0800
+@@ -244,12 +244,6 @@
+ CONFIG_IEEE80211W=y
+ endif
+ 
+-ifdef CONFIG_IEEE80211W
+-L_CFLAGS += -DCONFIG_IEEE80211W
+-NEED_SHA256=y
+-NEED_AES_OMAC1=y
+-endif
+-
+ ifdef CONFIG_IEEE80211R
+ L_CFLAGS += -DCONFIG_IEEE80211R
+ OBJS += src/rsn_supp/wpa_ft.c
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/dpp_supplicant.c b/external/wpa_supplicant_8/wpa_supplicant/dpp_supplicant.c
+--- a/external/wpa_supplicant_8/wpa_supplicant/dpp_supplicant.c	2026-03-01 15:59:45.270705156 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/dpp_supplicant.c	2026-03-01 15:52:24.605341731 +0800
+@@ -820,7 +820,9 @@
+ 
+ 	if (auth->connector) {
+ 		ssid->key_mgmt = WPA_KEY_MGMT_DPP;
++#ifdef CONFIG_IEEE80211W
+ 		ssid->ieee80211w = MGMT_FRAME_PROTECTION_REQUIRED;
++#endif
+ 		ssid->dpp_connector = os_strdup(auth->connector);
+ 		if (!ssid->dpp_connector)
+ 			goto fail;
+@@ -857,7 +859,9 @@
+ 		if (dpp_akm_sae(auth->akm))
+ 			ssid->key_mgmt |= WPA_KEY_MGMT_SAE |
+ 				WPA_KEY_MGMT_FT_SAE;
++#ifdef CONFIG_IEEE80211W
+ 		ssid->ieee80211w = MGMT_FRAME_PROTECTION_OPTIONAL;
++#endif
+ 		if (auth->passphrase[0]) {
+ 			if (wpa_config_set_quoted(ssid, "psk",
+ 						  auth->passphrase) < 0)
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/hidl/1.2/sta_network.cpp b/external/wpa_supplicant_8/wpa_supplicant/hidl/1.2/sta_network.cpp
+--- a/external/wpa_supplicant_8/wpa_supplicant/hidl/1.2/sta_network.cpp	2026-03-01 15:59:45.273705145 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/hidl/1.2/sta_network.cpp	2026-03-01 15:54:50.644791099 +0800
+@@ -1010,10 +1010,12 @@
+ 
+ SupplicantStatus StaNetwork::setRequirePmfInternal(bool enable)
+ {
++#ifdef CONFIG_IEEE80211W
+ 	struct wpa_ssid *wpa_ssid = retrieveNetworkPtr();
+ 	if (enable) {
+ 		wpa_ssid->ieee80211w = MGMT_FRAME_PROTECTION_REQUIRED;
+ 	}
++#endif
+ 	resetInternalStateAfterParamsUpdate();
+ 	return {SupplicantStatusCode::SUCCESS, ""};
+ }
+@@ -1421,9 +1423,13 @@
+ 
+ std::pair<SupplicantStatus, bool> StaNetwork::getRequirePmfInternal()
+ {
++#ifdef CONFIG_IEEE80211W
+ 	struct wpa_ssid *wpa_ssid = retrieveNetworkPtr();
+ 	return {{SupplicantStatusCode::SUCCESS, ""},
+ 		(wpa_ssid->ieee80211w == MGMT_FRAME_PROTECTION_REQUIRED)};
++#else
++	return {{SupplicantStatusCode::SUCCESS, ""}, false};
++#endif
+ }
+
+ 
+ std::pair<SupplicantStatus, ISupplicantStaNetwork::EapMethod>
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/Makefile b/external/wpa_supplicant_8/wpa_supplicant/Makefile
+--- a/external/wpa_supplicant_8/wpa_supplicant/Makefile	2026-03-01 15:59:45.266705171 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/Makefile	2026-03-01 15:51:02.458656554 +0800
+@@ -246,7 +246,6 @@
+ endif
+ 
+ ifdef CONFIG_IEEE80211W
+-CFLAGS += -DCONFIG_IEEE80211W
+ NEED_SHA256=y
+ NEED_AES_OMAC1=y
+ endif
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/src/ap/Makefile b/external/wpa_supplicant_8/wpa_supplicant/src/ap/Makefile
+--- a/external/wpa_supplicant_8/wpa_supplicant/src/ap/Makefile	2026-03-01 15:59:45.233705291 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/src/ap/Makefile	2026-03-01 15:49:56.789911437 +0800
+@@ -15,7 +15,6 @@
+ CFLAGS += -DCONFIG_INTERWORKING
+ CFLAGS += -DCONFIG_IEEE80211R
+ CFLAGS += -DCONFIG_IEEE80211R_AP
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_WPS
+ CFLAGS += -DCONFIG_PROXYARP
+ CFLAGS += -DCONFIG_IPV6
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/src/common/Makefile b/external/wpa_supplicant_8/wpa_supplicant/src/common/Makefile
+--- a/external/wpa_supplicant_8/wpa_supplicant/src/common/Makefile	2026-03-01 15:59:45.238705273 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/src/common/Makefile	2026-03-01 15:50:11.197855247 +0800
+@@ -9,7 +9,6 @@
+ include ../lib.rules
+ 
+ CFLAGS += -DCONFIG_IEEE80211R
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_HS20
+ CFLAGS += -DCONFIG_SAE
+ CFLAGS += -DCONFIG_SUITE
+diff -ruN a/external/wpa_supplicant_8/wpa_supplicant/src/rsn_supp/Makefile b/external/wpa_supplicant_8/wpa_supplicant/src/rsn_supp/Makefile
+--- a/external/wpa_supplicant_8/wpa_supplicant/src/rsn_supp/Makefile	2026-03-01 15:59:45.258705200 +0800
++++ b/external/wpa_supplicant_8/wpa_supplicant/src/rsn_supp/Makefile	2026-03-01 15:50:25.990797709 +0800
+@@ -8,7 +8,6 @@
+ 
+ include ../lib.rules
+ 
+-CFLAGS += -DCONFIG_IEEE80211W
+ CFLAGS += -DCONFIG_IEEE80211R
+ CFLAGS += -DCONFIG_TDLS
+ CFLAGS += -DCONFIG_WNM
+
